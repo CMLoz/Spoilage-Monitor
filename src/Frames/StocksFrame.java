@@ -37,7 +37,7 @@ public class StocksFrame extends JFrame {
                 dispose();
             }
         });
-
+        setTitle("Spoilage Monitor");
         setSize(1024, 720);
 
         initComponents(mainFrame);
