@@ -1,3 +1,5 @@
+import Frames.MainFrame;
+
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
@@ -11,6 +13,7 @@ import javax.swing.table.DefaultTableModel;
 public class Main {
     public static void main(String[] args) {
 
+        new MainFrame();
         String url = "jdbc:sqlite:SpoilMoniDB.db";
         final String[] selectedCategory = {null}; // null means "All"
 
