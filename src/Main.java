@@ -12,9 +12,9 @@ public class Main {
     public static void main(String[] args) {
 
         String url = "jdbc:sqlite:SpoilMoniDB.db";
-        final String[] selectedCategory = {null};
+        final String[] selectedCategory = {null}; // null means "All"
 
-
+        // Ensure the items table exists
         String createTableSQL = """
             CREATE TABLE IF NOT EXISTS items (
                 item_ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -25,14 +25,11 @@ public class Main {
             );
         """;
 
+        // Create the table in the database
         try (Connection conn = DriverManager.getConnection(url);
              Statement stmt = conn.createStatement()) {
-
             stmt.execute(createTableSQL);
-            System.out.println("Table created or already exists.");
-
         } catch (SQLException e) {
-            System.out.println("Database error:");
             e.printStackTrace();
         }
 
@@ -46,7 +43,14 @@ public class Main {
         JPanel cardPanel = new JPanel(cardLayout);
 
         // Main screen panel
-        JPanel mainPanel = new JPanel();
+        JPanel mainPanel = new JPanel(null) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                // Draw background images (sticker-like images)
+                drawBackgroundImages(g);
+            }
+        };
         mainPanel.setBackground(Color.decode("#F4F8D3"));
 
         JLabel title = new JLabel("Spoilage Monitor");
@@ -58,7 +62,6 @@ public class Main {
         nearLabel.setFont(new Font("Arial", Font.BOLD, 27));
 
         JTable spoilTable = createSpoilTableFromDB("SpoilMoniDB.db");
-
         JScrollPane spoilscrollPane = new JScrollPane(spoilTable);
         spoilscrollPane.setBounds(580, 200, 360, 250);
 
@@ -68,15 +71,44 @@ public class Main {
 
         JButton recipeButton = new JButton("View Recipes");
         recipeButton.setBounds(150, 300, 300, 50);
-        recipeButton.setEnabled(false);
-        styleButton(recipeButton);
+        styleButton(recipeButton); // Always enabled
 
         JButton exitButton = new JButton("Exit Application");
         exitButton.setBounds(150, 400, 300, 50);
         styleButton(exitButton);
 
+        // Add main panel to card layout
         cardPanel.add(mainPanel, "Home");
+        mainFrame.add(cardPanel);
 
+        // Table row click listener
+        spoilTable.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                int selectedRow = spoilTable.getSelectedRow();
+                if (selectedRow != -1) {
+                    String itemName = spoilTable.getValueAt(selectedRow, 0).toString();
+                    recipeButton.setText("Check " + itemName.toLowerCase() + " recipes");
+                    selectedCategory[0] = itemName;
+                }
+            }
+        });
+
+        // View Stocks button
+        checkButton.addActionListener(e -> {
+            ViewStocks viewStocksPanel = new ViewStocks();
+            cardPanel.add(viewStocksPanel, "ViewStocks");
+            cardLayout.show(cardPanel, "ViewStocks");
+        });
+
+        // Recipe button
+        recipeButton.addActionListener(e -> {
+            String category = selectedCategory[0] == null ? "All" : selectedCategory[0];
+            RecipeScreen recipeScreen = new RecipeScreen(category);
+            cardPanel.add(recipeScreen, "RecipeScreen");
+            cardLayout.show(cardPanel, "RecipeScreen");
+        });
+
+        // Exit button
         exitButton.addActionListener(e -> {
             int response = JOptionPane.showConfirmDialog(mainFrame, "Are you sure you want to exit?", "Exit Confirmation", JOptionPane.YES_NO_OPTION);
             if (response == JOptionPane.YES_OPTION) {
@@ -84,52 +116,20 @@ public class Main {
             }
         });
 
-        spoilTable.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                int selectedRow = spoilTable.getSelectedRow();
-                if (selectedRow != -1) {
-                    String itemName = spoilTable.getValueAt(selectedRow, 0).toString();
-                    recipeButton.setText("Check " + itemName.toLowerCase() + " recipes");
-                    recipeButton.setEnabled(true);
-                    selectedCategory[0] = itemName; // Capture category
-                }
-            }
-        });
-
-        checkButton.addActionListener(e -> {
-            ViewStocks viewStocksPanel = new ViewStocks();
-            cardPanel.add(viewStocksPanel, "ViewStocks");
-            cardLayout.show(cardPanel, "ViewStocks");
-        });
-
-        recipeButton.addActionListener(e -> {
-            if (selectedCategory[0] != null) {
-                RecipeScreen recipeScreen = new RecipeScreen(selectedCategory[0]);
-                cardPanel.add(recipeScreen, "RecipeScreen");
-                cardLayout.show(cardPanel, "RecipeScreen");
-            }
-        });
-
-
-        mainPanel.setLayout(null);
-        mainFrame.add(cardPanel);
-
-        mainPanel.add(title);
-        mainPanel.add(nearLabel);
-        mainPanel.add(checkButton);
-        mainPanel.add(exitButton);
-        mainPanel.add(recipeButton);
-        mainPanel.add(spoilscrollPane);
-
-        // Table update
-        Timer timer = new Timer(10000, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JTable updatedTable = createSpoilTableFromDB("SpoilMoniDB.db");
-                spoilTable.setModel(updatedTable.getModel());
-            }
+        // Auto-refresh spoil table every 10 seconds
+        Timer timer = new Timer(10000, e -> {
+            JTable updatedTable = createSpoilTableFromDB("SpoilMoniDB.db");
+            spoilTable.setModel(updatedTable.getModel());
         });
         timer.start();
+
+        // Add components to main panel
+        mainPanel.add(title);
+        mainPanel.add(nearLabel);
+        mainPanel.add(spoilscrollPane);
+        mainPanel.add(checkButton);
+        mainPanel.add(recipeButton);
+        mainPanel.add(exitButton);
 
         mainFrame.setVisible(true);
     }
@@ -146,7 +146,6 @@ public class Main {
         String[] columnNames = {"Item", "Quantity", "Expires In (Days)"};
         DefaultTableModel model = new DefaultTableModel(columnNames, 0);
 
-        // Shelf life rules (in days) per item
         HashMap<String, Integer> shelfLifeMap = new HashMap<>();
         shelfLifeMap.put("Milk", 14);
         shelfLifeMap.put("Eggs", 14);
@@ -174,7 +173,6 @@ public class Main {
 
                 long daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), expiryDate);
 
-                // Items show up 2 days or less
                 if (daysLeft >= 0 && daysLeft <= 2) {
                     String expiresIn = (daysLeft == 0) ? "Today" : daysLeft + " days";
                     model.addRow(new Object[]{item, quantity, expiresIn});
@@ -186,4 +184,45 @@ public class Main {
 
         return new JTable(model);
     }
+
+    private static void drawBackgroundImages(Graphics g) {
+
+        ImageIcon mushroomIcon = new ImageIcon("photos/mushrooms.png");
+        ImageIcon milkIcon = new ImageIcon("photos/glass-of-milk.png");
+        ImageIcon breadIcon = new ImageIcon("photos/bread.png");
+        ImageIcon milkCartonIcon = new ImageIcon("photos/milk-carton.png");
+        ImageIcon carrotsIcon = new ImageIcon("photos/carrots.png");
+        ImageIcon avocadoIcon = new ImageIcon("photos/avocado.png");
+        ImageIcon friedEggIcon = new ImageIcon("photos/fried-egg.png");
+
+        Image mushroomImg = mushroomIcon.getImage().getScaledInstance(160, 160, Image.SCALE_SMOOTH);
+        mushroomIcon = new ImageIcon(mushroomImg);
+
+        Image milkImg = milkIcon.getImage().getScaledInstance(160, 160, Image.SCALE_SMOOTH);
+        milkIcon = new ImageIcon(milkImg);
+
+        Image breadImg = breadIcon.getImage().getScaledInstance(160, 160, Image.SCALE_SMOOTH);
+        breadIcon = new ImageIcon(breadImg);
+
+        Image milkCartonImg = milkCartonIcon.getImage().getScaledInstance(160, 160, Image.SCALE_SMOOTH);
+        milkCartonIcon = new ImageIcon(milkCartonImg);
+
+        Image carrotsImg = carrotsIcon.getImage().getScaledInstance(160, 160, Image.SCALE_SMOOTH);
+        carrotsIcon = new ImageIcon(carrotsImg);
+
+        Image avocadoImg = avocadoIcon.getImage().getScaledInstance(160, 160, Image.SCALE_SMOOTH);
+        avocadoIcon = new ImageIcon(avocadoImg);
+
+        Image friedEggImg = friedEggIcon.getImage().getScaledInstance(160, 160, Image.SCALE_SMOOTH);
+        friedEggIcon = new ImageIcon(friedEggImg);
+
+        g.drawImage(mushroomIcon.getImage(), 70, 50, null);
+        g.drawImage(milkIcon.getImage(), 50, 350, null);
+        g.drawImage(breadIcon.getImage(), 300, 140, null);
+        g.drawImage(milkCartonIcon.getImage(), 400, 280, null);
+        g.drawImage(carrotsIcon.getImage(), 600, 400, null);
+        g.drawImage(avocadoIcon.getImage(), 780, 10, null);
+        g.drawImage(friedEggIcon.getImage(), 900, 300, null);
+    }
+
 }

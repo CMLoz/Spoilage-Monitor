@@ -183,4 +183,46 @@ public class ViewStocks extends JPanel {
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createEmptyBorder());
     }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        ImageIcon mushroomIcon = new ImageIcon("photos/mushrooms.png");
+        ImageIcon milkIcon = new ImageIcon("photos/glass-of-milk.png");
+        ImageIcon breadIcon = new ImageIcon("photos/bread.png");
+        ImageIcon milkCartonIcon = new ImageIcon("photos/milk-carton.png");
+        ImageIcon carrotsIcon = new ImageIcon("photos/carrots.png");
+        ImageIcon avocadoIcon = new ImageIcon("photos/avocado.png");
+        ImageIcon friedEggIcon = new ImageIcon("photos/fried-egg.png");
+
+        Image mushroomImg = mushroomIcon.getImage().getScaledInstance(160, 160, Image.SCALE_SMOOTH);
+        mushroomIcon = new ImageIcon(mushroomImg);
+
+        Image milkImg = milkIcon.getImage().getScaledInstance(160, 160, Image.SCALE_SMOOTH);
+        milkIcon = new ImageIcon(milkImg);
+
+        Image breadImg = breadIcon.getImage().getScaledInstance(160, 160, Image.SCALE_SMOOTH);
+        breadIcon = new ImageIcon(breadImg);
+
+        Image milkCartonImg = milkCartonIcon.getImage().getScaledInstance(160, 160, Image.SCALE_SMOOTH);
+        milkCartonIcon = new ImageIcon(milkCartonImg);
+
+        Image carrotsImg = carrotsIcon.getImage().getScaledInstance(160, 160, Image.SCALE_SMOOTH);
+        carrotsIcon = new ImageIcon(carrotsImg);
+
+        Image avocadoImg = avocadoIcon.getImage().getScaledInstance(160, 160, Image.SCALE_SMOOTH);
+        avocadoIcon = new ImageIcon(avocadoImg);
+
+        Image friedEggImg = friedEggIcon.getImage().getScaledInstance(160, 160, Image.SCALE_SMOOTH);
+        friedEggIcon = new ImageIcon(friedEggImg);
+
+        g.drawImage(mushroomIcon.getImage(), 70, 50, null);
+        g.drawImage(milkIcon.getImage(), 50, 350, null);
+        g.drawImage(breadIcon.getImage(), 300, 140, null);
+        g.drawImage(milkCartonIcon.getImage(), 400, 280, null);
+        g.drawImage(carrotsIcon.getImage(), 600, 400, null);
+        g.drawImage(avocadoIcon.getImage(), 780, 10, null);
+        g.drawImage(friedEggIcon.getImage(), 900, 300, null);
+    }
 }
