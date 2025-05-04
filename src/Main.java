@@ -13,7 +13,6 @@ import javax.swing.table.DefaultTableModel;
 public class Main {
     public static void main(String[] args) {
 
-        new MainFrame();
         String url = "jdbc:sqlite:SpoilMoniDB.db";
         final String[] selectedCategory = {null}; // null means "All"
 
@@ -36,6 +35,7 @@ public class Main {
             e.printStackTrace();
         }
 
+        new MainFrame();
         // Main application frame
         JFrame mainFrame = new JFrame("Spoilage Monitor");
         mainFrame.setSize(1024, 600);
