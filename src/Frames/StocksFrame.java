@@ -11,7 +11,6 @@ import java.sql.*;
 
 public class StocksFrame extends JFrame {
 
-    private JFrame mainFrame;
     private JPanel mainPanel;
 
     private JTable itemsTable;
@@ -25,7 +24,6 @@ public class StocksFrame extends JFrame {
     JComboBox<String> foodTypeComboBox;
 
     public StocksFrame(JFrame mainFrame){
-        this.mainFrame = mainFrame;
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
