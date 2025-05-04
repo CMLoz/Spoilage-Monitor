@@ -4,6 +4,8 @@ import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -142,6 +144,18 @@ public class MainFrame extends JFrame {
             int response = JOptionPane.showConfirmDialog(this, "Are you sure you want to exit?", "Exit Confirmation", JOptionPane.YES_NO_OPTION);
             if (response == JOptionPane.YES_OPTION) {
                 System.exit(0);
+            }
+        });
+
+        // Table row click listener
+        spoilTable.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                int selectedRow = spoilTable.getSelectedRow();
+                if (selectedRow != -1) {
+                    String itemName = spoilTable.getValueAt(selectedRow, 0).toString();
+                    recipeButton.setText("Check " + itemName.toLowerCase() + " recipes");
+                    selectedCategory[0] = itemName;
+                }
             }
         });
     }
