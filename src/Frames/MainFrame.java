@@ -132,12 +132,11 @@ public class MainFrame extends JFrame {
         });
 
         // Recipe button
-//        recipeButton.addActionListener(e -> {
-//            String category = selectedCategory[0] == null ? "All" : selectedCategory[0];
-//            RecipeScreen recipeScreen = new RecipeScreen(category);
-//            cardPanel.add(recipeScreen, "RecipeScreen");
-//            cardLayout.show(cardPanel, "RecipeScreen");
-//        });
+        recipeButton.addActionListener(e -> {
+            String category = selectedCategory[0] == null ? "All" : selectedCategory[0];
+            RecipeFrame viewRecipePanel = new RecipeFrame(this, category);
+            setVisible(false);
+        });
 
         // Exit button
         exitButton.addActionListener(e -> {
