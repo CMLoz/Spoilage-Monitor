@@ -46,9 +46,17 @@ public class MainFrame extends JFrame {
         setBackground(Color.decode("#F4F8D3"));
         setTitle("Spoilage Monitor");
 
+        // Auto-refresh spoil table every 10 seconds
+        Timer timer = new Timer(10000, e -> {
+            JTable updatedTable = createSpoilTableFromDB("SpoilMoniDB.db");
+            spoilTable.setModel(updatedTable.getModel());
+        });
+        timer.start();
+
         setLayout(new MigLayout("fill, insets 0","[grow 3][grow 7]","[fill]"));
 
         initComp();
+        addActionListeners();
         setLocationRelativeTo(null);
         setVisible(true);
 
@@ -114,6 +122,29 @@ public class MainFrame extends JFrame {
 
     }
 
+    private void addActionListeners(){
+        // View Stocks button
+        checkButton.addActionListener(e -> {
+            StocksFrame viewStocksPanel = new StocksFrame(this);
+            setVisible(false);
+        });
+
+        // Recipe button
+//        recipeButton.addActionListener(e -> {
+//            String category = selectedCategory[0] == null ? "All" : selectedCategory[0];
+//            RecipeScreen recipeScreen = new RecipeScreen(category);
+//            cardPanel.add(recipeScreen, "RecipeScreen");
+//            cardLayout.show(cardPanel, "RecipeScreen");
+//        });
+
+        // Exit button
+        exitButton.addActionListener(e -> {
+            int response = JOptionPane.showConfirmDialog(this, "Are you sure you want to exit?", "Exit Confirmation", JOptionPane.YES_NO_OPTION);
+            if (response == JOptionPane.YES_OPTION) {
+                System.exit(0);
+            }
+        });
+    }
 
     private void createConnection(){
         // Create the table in the database
